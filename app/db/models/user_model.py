@@ -1,12 +1,12 @@
 from app.db.base import Base
-from app.db.associations import user_role
+# from app.db.associations import user_role
+# from app.db.models.role_model import Role
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime, timezone
 
 
 class User(Base):
-
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(
@@ -21,17 +21,16 @@ class User(Base):
     password: Mapped[str] = mapped_column(String(255), nullable=True)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.now(timezone.utc)
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime,
-        default=datetime.now(timezone.utc),
-        onupdate=datetime.now(timezone.utc),
-    )
 
-    roles = relationship("Role", secondary=user_role, back_populates="users")
-    otps = relationship("OTP", back_populates="user")
+    def to_dict(self):
+        # Include the fields you want to expose
+        return {
+            "id": self.id,
+            "username": self.username,
+            "email": self.email,
+            "is_verified": self.is_verified,
+            "is_active": self.is_active,
+        }
 
     def __repr__(self) -> str:
-        return f"<User {self.id} {self.username} {self.email} {self.is_active} {self.created_at} {self.updated_at}>"
+        return f"<User {self.id} {self.username} {self.email} {self.is_active}>"

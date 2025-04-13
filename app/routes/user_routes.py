@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Depends
+from fastapi import APIRouter, Request, Depends, FastAPI
 from fastapi.responses import JSONResponse
 from app.controllers.user_controller import register, login
 from app.db.session import AsyncSessionLocal
@@ -31,5 +31,5 @@ async def login_route(request: Request, db: AsyncSession = Depends(get_db)):
     return await login(request, db)
 
 
-def register_auth_routes(app):
+def register_auth_routes(app: FastAPI):
     app.include_router(auth_router)
