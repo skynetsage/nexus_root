@@ -1,5 +1,5 @@
 import os
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     ENV: str
@@ -14,5 +14,6 @@ class Settings(BaseSettings):
 
     class Config:
         env_file = ".env"
+        extra="allow"
 
 settings = Settings()

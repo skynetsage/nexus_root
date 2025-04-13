@@ -1,4 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from app.db.models.user_model import User
 from app.schemas.user_schemas import UserBase
 
@@ -8,29 +9,34 @@ class UserRepository:
         self.db = db
 
     async def get_user_by_id(self, user_id: int) -> User | None:
-        return (
-            await self.db.query(User)
-            .filter(User.id == user_id, User.is_active == True)
-            .first()
+        result = await self.db.execute(
+            select(User).where(User.id == user_id, User.is_active == True)
         )
+        return result.scalars().first()
 
     async def get_user_by_username(self, username: str) -> User | None:
-        return (
-            await self.db.query(User)
-            .filter(User.username == username, User.is_active == True)
-            .first()
+        result = await self.db.execute(
+            select(User).where(User.username == username, User.is_active == True)
         )
+        return result.scalars().first()
 
     async def get_all_active_users(self) -> list[User]:
-        return await self.db.query(User).filter(User.is_active == True).all()
+        result = await self.db.execute(
+            select(User).where(User.is_active == True)
+        )
+        return result.scalars().all()
 
     async def get_all_inactive_users(self) -> list[User]:
-        return await self.db.query(User).filter(User.is_active == False).all()
+        result = await self.db.execute(
+            select(User).where(User.is_active == False)
+        )
+        return result.scalars().all()
 
     async def delete_user_by_id(self, user_id: int) -> User | None:
-        user_to_deactivate = (
-            await self.db.query(User).filter(User.id == user_id).first()
+        result = await self.db.execute(
+            select(User).where(User.id == user_id)
         )
+        user_to_deactivate = result.scalars().first()
         if user_to_deactivate:
             user_to_deactivate.is_active = False
             await self.db.commit()
