@@ -28,19 +28,20 @@ async def register(request: Request, db: AsyncSession):
 async def login(request: Request, db: AsyncSession):
     data = await request.json()
 
-    username_or_email = data.get("username") or data.get("email")
+    username = data.get("username") 
+    email  = data.get("email")
     password = data.get("password")
 
-    if not username_or_email or not password:
+    if not (username or email)  or not password:
         return JSONResponse(
             status_code=400, content={"error": "Missing username/email or password"}
         )
 
     user_service = UserService(db)
-    user, error = await user_service.validate_user(username_or_email, password)
+    user = await user_service.login((username,email), password)
 
-    if error:
-        return JSONResponse(status_code=401, content={"error": error})
+    if not user:
+        return JSONResponse(status_code=401, content={"error": "User not found"})
 
     return JSONResponse(
         status_code=200,

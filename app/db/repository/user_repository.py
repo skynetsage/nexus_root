@@ -20,6 +20,13 @@ class UserRepository:
         )
         return result.scalars().first()
 
+    async def get_user_by_email(self, email: str) -> User | None:
+        result = await self.db.execute(
+            select(User).where(User.email == email, User.is_active == True)
+        )
+        return result.scalars().first()
+
+
     async def get_all_active_users(self) -> list[User]:
         result = await self.db.execute(
             select(User).where(User.is_active == True)
@@ -54,3 +61,23 @@ class UserRepository:
         await self.db.commit()
         await self.db.refresh(new_user)
         return new_user
+    
+
+    async def verify_user_by_username(self, username: str,password: str) -> User | None:
+        result = await self.db.execute(
+            select(User).where(User.username == username, User.password == password, User.is_active == True)
+        )
+        return result.scalars().first()
+
+    async def verify_user_by_email(self, email: str, password: str) -> User | None:
+        result = await self.db.execute(
+            select(User).where(User.email == email, password == password, User.is_active == True)
+        )
+        return result.scalars().first()
+    
+    async def verify_user_by_credentials(self,username:str, email: str, password: str) -> User | None:
+        result = await self.db.execute(
+            select(User).where(User.email == email,User.username == username, password == password, User.is_active == True)
+        )
+        return result.scalars().first()
+
