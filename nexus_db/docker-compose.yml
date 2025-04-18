@@ -5,8 +5,8 @@ services:
     image: postgres:16
     container_name: project_postgres
     environment:
-      POSTGRES_USER: dev
-      POSTGRES_PASSWORD: dev
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
       POSTGRES_DB: nexus_db
     ports:
       - "5432:5432"

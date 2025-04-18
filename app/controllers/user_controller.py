@@ -15,7 +15,9 @@ async def register(request: Request, db: AsyncSession):
     required_fields = ["username", "email", "password"]
     if not all(field in data and data[field] for field in required_fields):
         return JSONResponse(
-            status_code=400, content={"error": "Missing required fields"}
+            logger.error("Error creating new user", obj=required_fields, exc_info=True),
+            status_code=400,
+            content={"error": "Missing required fields"},
         )
 
     user_data = UserBase(**data)
@@ -24,6 +26,7 @@ async def register(request: Request, db: AsyncSession):
     new_user, error = await user_service.sign_up(user_data)
     if error:
         return JSONResponse(
+            logger.error("Error creating new user", obj=new_user, exc_info=True),
             status_code=400,
             content={"errorMsg": "Error in creating new user", "error": error},
         )

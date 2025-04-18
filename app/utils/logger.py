@@ -6,7 +6,7 @@ from typing import Any, Optional
 
 from loguru import logger as loguru_logger
 
-from app.core.Config import settings
+from app.core.config import settings
 
 loguru_logger.remove()
 

@@ -1,22 +1,24 @@
 from fastapi import FastAPI
-from app.routes.user_routes import register_auth_routes
-from fastapi import Request
-from fastapi.responses import JSONResponse
-import traceback
-app = FastAPI()
+from app.api.api_router import api_router
+from app.api.v1.endpoints import health
+from contextlib import asynccontextmanager
 
-register_auth_routes(app)
+from app.middleware.health_lifespan import HealthCheckMiddleware
 
-@app.exception_handler(Exception)
-async def all_exception_handler(request: Request, exc: Exception):
-    traceback.print_exc()
-    return JSONResponse(
-        status_code=500,
-        content={"detail": f"Unexpected error: {str(exc)}"},
-    )
+@asynccontextmanager
+async def lifespan(app: FastAPI):
 
+    await health.initialize_health_state(app)
 
+    postgres = "✅ OK" if getattr(app.state, "postgres_healthy", False) else f"❌ {getattr(app.state, 'postgres_error', 'Unknown')}"
+    mongo = "✅ OK" if getattr(app.state, "mongo_healthy", False) else f"❌ {getattr(app.state, 'mongo_error', 'Unknown')}"
 
-@app.get("/")
-def read_root():
-    return {"msg": "Welcome to the backend!"}
+    print("\n🔍 Health Check at Startup:")
+    print(f"  🐘 PostgreSQL: {postgres}")
+    print(f"  🍃 MongoDB:    {mongo}\n")
+
+    yield
+
+app = FastAPI(lifespan=lifespan)
+app.include_router(api_router)
+app.add_middleware(HealthCheckMiddleware)

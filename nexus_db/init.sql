@@ -1,3 +1,17 @@
+-- -- Create dev role if not already created
+-- DO $$
+-- BEGIN
+--     IF NOT EXISTS (
+--         SELECT FROM pg_catalog.pg_roles WHERE rolname = 'admin'
+--     ) THEN
+--         CREATE ROLE dev WITH LOGIN PASSWORD 'dev';
+--         ALTER ROLE dev CREATEDB;
+--         GRANT ALL PRIVILEGES ON DATABASE nexus_db TO dev;
+--     END IF;
+-- END
+-- $$;
+
+
 -- Drop tables if they exist (safe reset for local/dev)
 DROP TABLE IF EXISTS user_role;
 DROP TABLE IF EXISTS otps;

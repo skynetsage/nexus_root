@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from app.db.models.user_model import User
+from app.db.postgres.models.user_model import User
 from app.schemas.user_schemas import UserBase
 
 
