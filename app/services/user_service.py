@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.postgres.models.user_model import User
 from app.db.postgres.repository.user_repository import UserRepository
 from app.schemas.user_schemas import UserBase
-from app.utils.logger import get_logger
+from app.core.logger import get_logger
 from app.utils.password_util import hash_password, verify_password
 
 logger = get_logger("User")

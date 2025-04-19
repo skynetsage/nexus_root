@@ -1,7 +1,19 @@
 import os
+import yaml
 from functools import lru_cache
-from typing import Literal
+from typing import Literal, Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class LogSettings(BaseSettings):
+    level: str
+    dir: str
+    rotation_enabled: bool
+    rotation: str
+    retention: str
+    compression: str
+    format_console: str
+    format_file: str
 
 
 class Settings(BaseSettings):
@@ -13,11 +25,6 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     SECRET_KEY: str
 
-    # Logging
-    LOG_DIR: str
-    LOG_LEVEL: str = "INFO"
-    LOG_ROTATION: bool = False
-
     # Database settings - PostgreSQL
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
@@ -28,6 +35,9 @@ class Settings(BaseSettings):
     # Database settings - MongoDB
     MONGO_URI: str
     MONGO_DB: str
+
+    # Log settings (optional, filled manually later)
+    log: Optional[LogSettings] = None
 
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="allow"
@@ -56,11 +66,21 @@ class ProdSettings(Settings):
 
 
 @lru_cache
-def get_settings():
+def get_settings() -> Settings:
     env = os.getenv("ENV", "dev")
-    if env == "prod":
-        return ProdSettings()
-    return DevSettings()
 
+    if env == "prod":
+        settings = ProdSettings()
+    else:
+        settings = DevSettings()
+
+    yaml_path = "./settings.yml"
+    if os.path.exists(yaml_path):
+        with open(yaml_path, "r") as file:
+            config = yaml.safe_load(file)
+        log_config = config["log"]
+        settings.log = LogSettings(**log_config)
+
+    return settings
 
 settings = get_settings()

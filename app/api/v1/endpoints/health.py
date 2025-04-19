@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request, status
 from app.db.postgres.engine import check_postgres_connection
 from app.db.mongodb.engine import check_mongo_connection
 
-db_router = APIRouter()
+db_router = APIRouter(prefix="/health", tags=["db"])
 
 async def initialize_health_state(app):
 

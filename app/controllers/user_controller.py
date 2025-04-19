@@ -4,9 +4,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.schemas.user_schemas import UserBase
 from app.services.user_service import UserService
-from app.utils.logger import get_logger
+from app.core.logger import get_logger
 
-logger = get_logger("User")
+logger = get_logger("user")
 
 
 async def register(request: Request, db: AsyncSession):

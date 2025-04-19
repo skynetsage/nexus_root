@@ -21,35 +21,37 @@ class Logger:
         if module_name not in self._initialized_modules:
             loguru_logger.add(
                 sys.stdout,
-                format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{extra[filename]}</cyan>:<cyan>{extra[line_no]}</cyan> - <level>{message}</level>",
+                format=settings.log.format_console,
                 filter=lambda record: record["extra"].get("module") == module_name,
-                level=settings.LOG_LEVEL,
+                level=settings.log.level,
                 colorize=True,
                 backtrace=True,
                 diagnose=True,
             )
 
-            os.makedirs(settings.LOG_DIR, exist_ok=True)
-            log_file = Path(settings.LOG_DIR) / f"{module_name}.log"
+            os.makedirs(settings.log.dir, exist_ok=True)
+            log_file = Path(settings.log.dir) / f"{module_name}.log"
 
-            if settings.LOG_ROTATION:
+            if settings.log.rotation_enabled:
                 loguru_logger.add(
                     log_file,
-                    format="{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {extra[filename]}:{extra[line_no]} - {message}",
+                    format=settings.log.format_file,
                     filter=lambda record: record["extra"].get("module") == module_name,
-                    level=settings.LOG_LEVEL,
-                    rotation="10 MB",
-                    retention="1 week",
-                    compression="zip",
+                    level=settings.log.level,
+                    rotation=settings.log.rotation,
+                    retention=settings.log.retention,
+                    compression=settings.log.compression,
+                    colorize=True,
                     backtrace=True,
                     diagnose=True,
                 )
             else:
                 loguru_logger.add(
                     log_file,
-                    format="{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {extra[filename]}:{extra[line_no]} - {message}",
+                    format=settings.log.format_file,
                     filter=lambda record: record["extra"].get("module") == module_name,
-                    level=settings.LOG_LEVEL,
+                    level=settings.log.level,
+                    colorize=True,
                     backtrace=True,
                     diagnose=True,
                 )
@@ -60,6 +62,7 @@ class Logger:
         frame = None
         try:
             frame = inspect.currentframe()
+            print(frame)
 
             for _ in range(3):
                 if not frame or not frame.f_back:
@@ -80,9 +83,15 @@ class Logger:
             if frame:
                 del frame
 
+    def _get_logger_with_context(self):
+        filename, line_no = self._get_caller_info()
+        return loguru_logger.bind(
+            filename=filename, line_no=line_no, module=self.module_name
+        )
+
     def debug(self, msg: str, obj: Optional[Any] = None):
         filename, line_no = self._get_caller_info()
-        log = self.logger.bind(filename=filename, line_no=line_no)
+        log = self._get_logger_with_context()
         if obj is not None:
             log.debug(f"{msg} | {obj}")
         else:
@@ -90,7 +99,7 @@ class Logger:
 
     def info(self, msg: str, obj: Optional[Any] = None):
         filename, line_no = self._get_caller_info()
-        log = self.logger.bind(filename=filename, line_no=line_no)
+        log = self._get_logger_with_context()
         if obj is not None:
             log.info(f"{msg} | {obj}")
         else:
@@ -98,7 +107,7 @@ class Logger:
 
     def error(self, msg: str, obj: Optional[Any] = None, exc_info=None):
         filename, line_no = self._get_caller_info()
-        log = self.logger.bind(filename=filename, line_no=line_no)
+        log = self._get_logger_with_context()
         message = f"{msg} | {obj}" if obj is not None else msg
         if exc_info:
             log.exception(message)
@@ -107,11 +116,27 @@ class Logger:
 
     def critical(self, msg: str, obj: Optional[Any] = None):
         filename, line_no = self._get_caller_info()
-        log = self.logger.bind(filename=filename, line_no=line_no)
+        log = self._get_logger_with_context()
         if obj is not None:
             log.critical(f"{msg} | {obj}")
         else:
             log.critical(msg)
+
+    def warning(self, msg: str, obj: Optional[Any] = None):
+        filename, line_no = self._get_caller_info()
+        log = self._get_logger_with_context()
+        if obj is not None:
+            log.warning(f"{msg} | {obj}")
+        else:
+            log.warning(msg)
+
+    def trace(self, msg: str, obj: Optional[Any] = None):
+        filename, line_no = self._get_caller_info()
+        log = self._get_logger_with_context()
+        if obj is not None:
+            log.trace(f"{msg} | {obj}")
+        else:
+            log.trace(msg)
 
 
 def get_logger(module_name: str) -> Logger:

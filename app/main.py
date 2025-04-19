@@ -4,6 +4,7 @@ from app.api.v1.endpoints import health
 from contextlib import asynccontextmanager
 
 from app.middleware.health_lifespan import HealthCheckMiddleware
+from app.middleware.logger_middleware import HTTPLoggerMiddleware
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -20,5 +21,7 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(lifespan=lifespan)
-app.include_router(api_router)
+app.add_middleware(HTTPLoggerMiddleware)
 app.add_middleware(HealthCheckMiddleware)
+
+app.include_router(api_router)

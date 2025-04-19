@@ -1,11 +1,23 @@
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy import  text
+from sqlalchemy import  text, event
 from sqlalchemy.orm import sessionmaker
 from app.core.config import settings
+from app.core.logger import get_logger
 
 DB_URL = settings.postgres_uri
+log = get_logger("postgres")
 
 engine = create_async_engine(DB_URL, future=True, echo=True)
+sync_engine = engine.sync_engine
+
+@event.listens_for(sync_engine, "before_cursor_execute")
+def log_sql(conn, cursor, statement, parameters, context, executemany):
+    log.debug("SQL executed", {"statement": statement, "params": parameters})
+
+@event.listens_for(sync_engine, "handle_error")
+def log_sql_error(context):
+    log.error("SQL error", {"statement": context.statement, "params": context.parameters}, exc_info=True)
+
 AsyncSessionLocal = sessionmaker(
     class_=AsyncSession,
     autocommit=False,
