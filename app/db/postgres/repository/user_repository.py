@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from app.db.postgres.models.user_model import User
+from app.db.postgres.models.user_model import UserModel as User
 from app.schemas.user_schemas import UserBase
 
 
@@ -26,23 +26,16 @@ class UserRepository:
         )
         return result.scalars().first()
 
-
     async def get_all_active_users(self) -> list[User]:
-        result = await self.db.execute(
-            select(User).where(User.is_active == True)
-        )
+        result = await self.db.execute(select(User).where(User.is_active == True))
         return result.scalars().all()
 
     async def get_all_inactive_users(self) -> list[User]:
-        result = await self.db.execute(
-            select(User).where(User.is_active == False)
-        )
+        result = await self.db.execute(select(User).where(User.is_active == False))
         return result.scalars().all()
 
     async def delete_user_by_id(self, user_id: int) -> User | None:
-        result = await self.db.execute(
-            select(User).where(User.id == user_id)
-        )
+        result = await self.db.execute(select(User).where(User.id == user_id))
         user_to_deactivate = result.scalars().first()
         if user_to_deactivate:
             user_to_deactivate.is_active = False
@@ -61,23 +54,36 @@ class UserRepository:
         await self.db.commit()
         await self.db.refresh(new_user)
         return new_user
-    
 
-    async def verify_user_by_username(self, username: str,password: str) -> User | None:
+    async def verify_user_by_username(
+        self, username: str, password: str
+    ) -> User | None:
         result = await self.db.execute(
-            select(User).where(User.username == username, User.password == password, User.is_active == True)
+            select(User).where(
+                User.username == username,
+                User.password == password,
+                User.is_active == True,
+            )
         )
         return result.scalars().first()
 
     async def verify_user_by_email(self, email: str, password: str) -> User | None:
         result = await self.db.execute(
-            select(User).where(User.email == email, password == password, User.is_active == True)
-        )
-        return result.scalars().first()
-    
-    async def verify_user_by_credentials(self,username:str, email: str, password: str) -> User | None:
-        result = await self.db.execute(
-            select(User).where(User.email == email,User.username == username, password == password, User.is_active == True)
+            select(User).where(
+                User.email == email, password == password, User.is_active == True
+            )
         )
         return result.scalars().first()
 
+    async def verify_user_by_credentials(
+        self, username: str, email: str, password: str
+    ) -> User | None:
+        result = await self.db.execute(
+            select(User).where(
+                User.email == email,
+                User.username == username,
+                password == password,
+                User.is_active == True,
+            )
+        )
+        return result.scalars().first()

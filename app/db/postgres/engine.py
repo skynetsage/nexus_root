@@ -1,10 +1,12 @@
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import  text, event
 from sqlalchemy.orm import sessionmaker
 from app.core.config import settings
 from app.core.logger import get_logger
 
 DB_URL = settings.postgres_uri
+base = declarative_base()
 log = get_logger("postgres")
 
 engine = create_async_engine(DB_URL, future=True, echo=True)

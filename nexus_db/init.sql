@@ -1,24 +1,4 @@
--- -- Create dev role if not already created
--- DO $$
--- BEGIN
---     IF NOT EXISTS (
---         SELECT FROM pg_catalog.pg_roles WHERE rolname = 'admin'
---     ) THEN
---         CREATE ROLE dev WITH LOGIN PASSWORD 'dev';
---         ALTER ROLE dev CREATEDB;
---         GRANT ALL PRIVILEGES ON DATABASE nexus_db TO dev;
---     END IF;
--- END
--- $$;
-
-
--- Drop tables if they exist (safe reset for local/dev)
-DROP TABLE IF EXISTS user_role;
-DROP TABLE IF EXISTS otps;
-DROP TABLE IF EXISTS roles;
-DROP TABLE IF EXISTS users;
-
--- Users Table
+-- Table: users
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(50) UNIQUE,
@@ -26,30 +6,36 @@ CREATE TABLE users (
     password VARCHAR(255),
     is_verified BOOLEAN DEFAULT FALSE,
     is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- Roles Table
-CREATE TABLE roles (
+-- Table: resumes
+CREATE TABLE resumes (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(50) UNIQUE NOT NULL,
-    description VARCHAR(255)
+    resume_analysis_id UUID,
+    resume_id VARCHAR NOT NULL UNIQUE,
+    overall_score INTEGER,
+    technical_score INTEGER,
+    grammer_score INTEGER,
+    is_analysed BOOLEAN,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- OTPs Table
-CREATE TABLE otps (
+-- Table: user_resume
+CREATE TABLE user_resume (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    otp_code VARCHAR(6) NOT NULL,
-    is_used BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    expires_at TIMESTAMP WITH TIME ZONE NOT NULL
+    resume_id VARCHAR NOT NULL REFERENCES resumes(resume_id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- User-Role Association Table
-CREATE TABLE user_role (
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    role_id INTEGER NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
-    PRIMARY KEY (user_id, role_id)
+-- Table: resume_upload
+CREATE TABLE resume_upload (
+    id SERIAL PRIMARY KEY,
+    resume_id VARCHAR NOT NULL REFERENCES resumes(resume_id) ON DELETE CASCADE,
+    filename VARCHAR NOT NULL,
+    file_path VARCHAR NOT NULL,
+    is_active BOOLEAN NOT NULL,
+    uploaded_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
