@@ -14,8 +14,8 @@ class UserResumeModel(base):
         String, ForeignKey("resumes.resume_id"), nullable=False, index=True
     )
 
-    user_id: Mapped[UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True
+    user_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("users.id"), nullable=False, index=True
     )
 
     created_at: Mapped[TIMESTAMP] = mapped_column(

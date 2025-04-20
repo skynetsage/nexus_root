@@ -16,6 +16,12 @@ class LogSettings(BaseSettings):
     format_file: str
 
 
+class UploadSettings(BaseSettings):
+    upload_folder: str
+    upload_max_size: str
+    upload_allowed_types: list[str] = ["pdf"]
+
+
 class Settings(BaseSettings):
     # Environment
     ENV: Literal["dev", "prod"] = "dev"
@@ -38,6 +44,7 @@ class Settings(BaseSettings):
 
     # Log settings (optional, filled manually later)
     log: Optional[LogSettings] = None
+    upload: Optional[UploadSettings] = None
 
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="allow"
@@ -67,7 +74,10 @@ class ProdSettings(Settings):
 
 @lru_cache
 def get_settings() -> Settings:
+    print("Starting settings load process...")
+
     env = os.getenv("ENV", "dev")
+    print(f"Detected environment: {env}")
 
     if env == "prod":
         settings = ProdSettings()
@@ -75,12 +85,43 @@ def get_settings() -> Settings:
         settings = DevSettings()
 
     yaml_path = "./settings.yml"
-    if os.path.exists(yaml_path):
-        with open(yaml_path, "r") as file:
-            config = yaml.safe_load(file)
-        log_config = config["log"]
-        settings.log = LogSettings(**log_config)
+    print(f"Looking for settings.yml file at: {yaml_path}")
 
+    if os.path.exists(yaml_path):
+        print(f"Found settings.yml. Loading configurations...")
+
+        with open(yaml_path, "r") as file:
+            try:
+                config = yaml.safe_load(file)
+                print("Successfully loaded settings.yml.")
+                print(f"Loaded configuration: {config}")
+
+                # Load log settings
+                if "log" in config:
+                    log_config = config["log"]
+                    settings.log = LogSettings(**log_config)
+                    print(f"Log configuration loaded: {settings.log}")
+                else:
+                    print("Log configuration missing in YAML.")
+
+                # Load upload settings
+                if "upload" in config:
+                    upload_config = config["upload"]
+                    settings.upload = UploadSettings(**upload_config)
+                    print(f"Upload configuration loaded: {settings.upload}")
+                else:
+                    print("Upload configuration missing in YAML.")
+
+            except yaml.YAMLError as e:
+                print(f"Error parsing settings.yml: {e}")
+                raise e
+    else:
+        print(f"Settings file {yaml_path} not found.")
+        raise FileNotFoundError(f"Settings file {yaml_path} not found.")
+
+    print("Settings successfully loaded.")
     return settings
 
+
+# Retrieve the settings
 settings = get_settings()

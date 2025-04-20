@@ -8,3 +8,9 @@ log:
 
   format_console: "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{extra[filename]}</cyan>:<cyan>{extra[line_no]}</cyan> - <level>{message}</level>"
   format_file: "{time:YYYY-MM-DD HH:mm:ss} | {level} | {extra[filename]}:{extra[line_no]} - {message}"
+
+upload:
+  upload_folder: uploads/resumes
+  upload_max_size: 10MB
+  upload_allowed_types:
+    - pdf

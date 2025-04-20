@@ -39,3 +39,4 @@ CREATE TABLE resume_upload (
     is_active BOOLEAN NOT NULL,
     uploaded_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+i

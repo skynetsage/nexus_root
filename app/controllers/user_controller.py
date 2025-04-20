@@ -2,7 +2,7 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.schemas.user_schemas import UserBase
+from app.schemas.user_schema import UserBase
 from app.services.user_service import UserService
 from app.core.logger import get_logger
 
