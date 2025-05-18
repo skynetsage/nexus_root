@@ -1,3 +1,4 @@
+from sys import exception
 from typing import Dict, Any, List
 
 from fastapi import UploadFile
@@ -29,12 +30,11 @@ class FileService:
     async def upload_resume(self, user_id: int, file: UploadFile) -> FileRead:
         try:
             filename = file.filename
-
-            user_data = await self.user_repo.get_user_by_id(user_id=user_id)
-
-            if not user_data:
-                logger.error(f"User with ID {user_id} not found.")
-                return None
+            # user_data = await self.user_repo.get_user_by_id(user_id=user_id)
+            # print(user_data)
+            # if not user_data:
+            #     logger.error(f"User with ID {user_id} not found.")
+            #     return None
 
             try:
                 file_path = await save_file(file, filename)
@@ -42,26 +42,26 @@ class FileService:
             except Exception as e:
                 logger.error(f"Error saving file {filename}", e, exc_info=True)
                 raise e
-            custom_resume_id = generate_custom_resume_id(user_data.username)
 
+            custom_resume_id = generate_custom_resume_id("Hello123")
             new_file_data = FileCreate(
-                uploader_id=user_data.id,
+                uploader_id=user_id,
                 filename=filename,
                 file_path=file_path,
                 is_active=True,
             )
-            file_data = await self.upload_repo.create(new_file_data)
 
+            file_data = await self.upload_repo.create(new_file_data)
             new_resume_entry = ResumeCreate(
                 resume_id=custom_resume_id,
-                user_id=user_data.id,
+                user_id=user_id,
                 file_id=file_data.id,
                 resume_analysis_id=None,
             )
-            await self.resume_repo.create_resume(new_resume_entry)
 
+            await self.resume_repo.create_resume(new_resume_entry)
             logger.info(
-                f"Resume {custom_resume_id} uploaded successfully for user {user_id}."
+                f"Resume {custom_resume_id} uploaded successfully for user {new_resume_entry.user_id}."
             )
             return FileRead(
                 id=file_data.id,

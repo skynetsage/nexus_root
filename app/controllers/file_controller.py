@@ -1,5 +1,5 @@
 import uuid
-from fastapi import UploadFile
+from fastapi import UploadFile, HTTPException, status
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -19,24 +19,35 @@ class FileController:
     def __init__(self, db: AsyncSession):
         self.db = db
         self.file_service = FileService(
-            UserRepository(db), ResumeRepository(db), FileUploadRepository(db)
+            user_repo=UserRepository(db),
+            resume_repo=ResumeRepository(db),
+            upload_repo=FileUploadRepository(db),
         )
 
     async def handle_upload(self, user_id: int, file: UploadFile):
-        if not file.filename:
-            logger.error("No file provided")
-            return JSONResponse(
-                status_code=400, content={"message": "No file provided"}
-            )
-        result = await self.file_service.upload_resume(user_id, file)
-        if not result:
-            logger.error("Error uploading resume")
-            return JSONResponse(
-                status_code=400, content={"message": "Error uploading resume"}
+        if not file or not file.filename:
+            logger.error("No file provided for upload")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="No file provided"
             )
 
-        logger.info("Resume uploaded successfully", obj=result)
-        return JSONResponse(status_code=200, content=result)
+        try:
+            result = await self.file_service.upload_resume(user_id, file)
+        except Exception as e:
+            logger.error(f"Exception during file upload: {e}", exc_info=True)
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Unexpected error occurred while uploading resume",
+            )
+
+        if not result:
+            logger.error("Failed to upload resume")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Error uploading resume"
+            )
+
+        logger.info(f"Resume uploaded successfully: {result}")
+        return result
 
     # async def handle_get_resume(self, user_id: int):
     #     if not user_id:
