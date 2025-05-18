@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, Integer, Boolean, TIMESTAMP
+from sqlalchemy import String, Integer, Boolean, TIMESTAMP, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from ..engine import base
@@ -9,37 +9,35 @@ class ResumeModel(base):
     __tablename__ = "resumes"
 
     id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True, nullable=False, index=True
+        Integer, primary_key=True, autoincrement=True, index=True
     )
     resume_analysis_id: Mapped[UUID | None] = mapped_column(
         UUID, nullable=True, index=True
     )
     resume_id: Mapped[str] = mapped_column(
-        String, nullable=False, index=True, unique=True  # Required for FK references
+        String, nullable=False, unique=True, index=True
     )
-    overall_score: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    technical_score: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    grammer_score: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    is_analysed: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
-
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id"), nullable=False, index=True
+    )
+    file_id: Mapped[int] = mapped_column(ForeignKey("file_upload.id"), nullable=True)
     created_at: Mapped[TIMESTAMP] = mapped_column(
-        TIMESTAMP(timezone=True), nullable=False, default=func.now()
+        TIMESTAMP(timezone=True), default=func.now(), nullable=False
     )
     updated_at: Mapped[TIMESTAMP] = mapped_column(
         TIMESTAMP(timezone=True),
-        nullable=False,
         default=func.now(),
         onupdate=func.now(),
+        nullable=False,
     )
 
-    # String-based reference to prevent circular import
-    uploads: Mapped[list["ResumeUploadModel"]] = relationship(
-        "ResumeUploadModel", back_populates="resume", cascade="all, delete-orphan"
+    user: Mapped["UserModel"] = relationship(back_populates="resumes")
+    resume_analysis: Mapped["ResumeAnalysisModel"] = relationship(
+        back_populates="resume", uselist=False
     )
-
-    user_resumes: Mapped[list["UserResumeModel"]] = relationship(
-        "UserResumeModel", back_populates="resume", cascade="all, delete-orphan"
+    file_upload: Mapped["FileUploadModel"] = relationship(
+        back_populates="resume", uselist=False
     )
 
     def __repr__(self) -> str:
-        return f"<Resume resume_id={self.resume_id} analysed={self.is_analysed}>"
+        return f"<Resume resume_id={self.resume_id}>"

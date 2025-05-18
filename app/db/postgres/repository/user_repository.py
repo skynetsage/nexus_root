@@ -65,35 +65,35 @@ class UserRepository:
         await self.db.refresh(new_user)
         return new_user
 
-    # async def verify_user_by_username(
-    #     self, username: str, password: str
-    # ) -> User | None:
-    #     result = await self.db.execute(
-    #         select(User).where(
-    #             User.username == username,
-    #             User.password == password,
-    #             User.is_active == True,
-    #         )
-    #     )
-    #     return result.scalars().first()
-    #
-    # async def verify_user_by_email(self, email: str, password: str) -> User | None:
-    #     result = await self.db.execute(
-    #         select(User).where(
-    #             User.email == email, password == password, User.is_active == True
-    #         )
-    #     )
-    #     return result.scalars().first()
-    #
-    # async def verify_user_by_credentials(
-    #     self, username: str, email: str, password: str
-    # ) -> User | None:
-    #     result = await self.db.execute(
-    #         select(User).where(
-    #             User.email == email,
-    #             User.username == username,
-    #             password == password,
-    #             User.is_active == True,
-    #         )
-    #     )
-    #     return result.scalars().first()
+    async def verify_user_by_username(
+        self, username: str, password: str
+    ) -> User | None:
+        result = await self.db.execute(
+            select(User).where(
+                User.username == username,
+                User.password == password,
+                User.is_active == True,
+            )
+        )
+        return result.scalars().first()
+
+    async def verify_user_by_email(self, email: str, password: str) -> User | None:
+        result = await self.db.execute(
+            select(User).where(
+                User.email == email, password == password, User.is_active == True
+            )
+        )
+        return result.scalars().first()
+
+    async def verify_user_by_credentials(
+        self, username: str, email: str, password: str
+    ) -> User | None:
+        result = await self.db.execute(
+            select(User).where(
+                User.email == email,
+                User.username == username,
+                password == password,
+                User.is_active == True,
+            )
+        )
+        return result.scalars().first()

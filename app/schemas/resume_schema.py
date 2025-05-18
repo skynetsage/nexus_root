@@ -1,34 +1,30 @@
-from pydantic import BaseModel, Field
-from uuid import UUID
-from typing import Optional
 from datetime import datetime
+from typing import Optional
+from pydantic import BaseModel
+
+from app.schemas.file_schema import FileRead
 
 
-class ResumeBase(BaseModel):
-    resume_analysis_id: Optional[UUID] = None
+class ResumeCreate(BaseModel):
     resume_id: str
-    overall_score: Optional[int] = None
-    technical_score: Optional[int] = None
-    grammer_score: Optional[int] = None
-    is_analysed: Optional[bool] = None
+    user_id: int
+    resume_analysis_id: str | None = None
+    file_id: int
+
+
+class ResumeUpdate(BaseModel):
+    resume_id: Optional[str] = None
+    user_id: Optional[int] = None
+    resume_analysis_id: Optional[str] = None
+    file_id: Optional[int] = None
+    updated_at: Optional[datetime | None] = None
+
+
+class ResumeRead(ResumeCreate):
+    id: int
     created_at: datetime
     updated_at: datetime
+    File: Optional[FileRead] = None
 
     class Config:
-        orm_mode = True
-
-
-class ResumeCreate(ResumeBase):
-    pass
-
-
-class ResumeUpdate(ResumeBase):
-    resume_analysis_id: Optional[UUID] = None
-    overall_score: Optional[int] = None
-    technical_score: Optional[int] = None
-    grammer_score: Optional[int] = None
-    is_analysed: Optional[bool] = None
-
-
-class ResumeInDB(ResumeBase):
-    id: int
+        from_attributes = True
