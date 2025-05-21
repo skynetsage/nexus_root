@@ -1,4 +1,5 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 from src.config.settings import settings
 from src.db.postgres.engine import get_db
 from sqlalchemy import text
@@ -16,15 +17,9 @@ async def root():
     return {"message": "Welcome to the Core Service!"}
 
 @api_router.get("/health/db")
-async def health_db():
-    async with get_db() as session:
-        try:
+async def db_check(session: AsyncSession = Depends(get_db)):
+    return { "status": "ok" }
 
-            await session.execute(text("SELECT 1"))
-            return {"status": "healthy"}
-        except Exception as e:
-            return {"status": "unhealthy", "error": str(e)}
-        
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
 if __name__ == "__main__":

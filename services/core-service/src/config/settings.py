@@ -1,5 +1,6 @@
 import os
-from typing import Optional
+from typing import Literal, Optional
+from pydantic import Field, PostgresDsn, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pathlib import Path
 
@@ -7,19 +8,26 @@ _SETTINGS_FILE_PATH = Path(__file__).resolve()
 _PROJECT_ROOT = _SETTINGS_FILE_PATH.parents[3]
 _ENV_FILE_PATH = _PROJECT_ROOT / "config" / ".env.core"
 
+Environment = Literal["dev", "test", "prod"]
 
 class Settings(BaseSettings):
-    ENV: str = "dev"
+    ENV: Environment = "dev"
     PORT: int = 8000
-
     API_V1_STR: str = "/api/v1"
-    SECRET_KEY: str
 
-    POSTGRES_USER: str
-    POSTGRES_PASSWORD: str
-    POSTGRES_HOST: str
-    POSTGRES_PORT: int 
-    POSTGRES_DB: str
+
+    SECRET_KEY: str = Field(min_length=3, default="unsafe-dev-secret-key-change-me")
+
+    # Database
+    POSTGRES_USER: str = "postgres"
+    POSTGRES_PASSWORD: str = "postgres"
+    POSTGRES_HOST: str = "localhost"
+    POSTGRES_PORT: int = 5432
+    POSTGRES_DB: str = "nexus_db"
+
+    # Optional for production
+    # POSTGRES_POOL_SIZE: int = 5
+    # POSTGRES_MAX_OVERFLOW: int = 10
 
     @property
     def get_pg_url(self) -> str:
@@ -28,8 +36,19 @@ class Settings(BaseSettings):
             f"{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:"
             f"{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
         )
+
+    @field_validator("SECRET_KEY", mode="before")
+    def validate_secret_key(cls, v: Optional[str]) -> str:
+        if not v and cls.model_fields["ENV"].default == "prod":
+            raise ValueError("SECRET_KEY is required in production")
+        return v or cls.model_fields["SECRET_KEY"].default
+
     model_config = SettingsConfigDict(
-        env_file=str(_ENV_FILE_PATH), env_file_encoding="utf-8", extra="allow"
+        env_file=str(_ENV_FILE_PATH),
+        env_file_encoding="utf-8",
+        extra="ignore",
+        env_prefix="",  # No prefix for env vars
+        case_sensitive=False  # Allow case-insensitive env vars
     )
 
 settings = Settings()
