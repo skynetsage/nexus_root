@@ -1,8 +1,7 @@
 from fastapi import FastAPI, APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.config.settings import settings
-from src.db.postgres.engine import get_db
-from sqlalchemy import text
+from .config.settings import settings
+from .db.postgres.engine import get_db
 
 app = FastAPI(
     title="Core Service",

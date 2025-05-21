@@ -3,7 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
 from contextlib import asynccontextmanager
-from src.config.settings import settings
+from ...config.settings import settings
 
 DB_URI = settings.get_pg_url
 

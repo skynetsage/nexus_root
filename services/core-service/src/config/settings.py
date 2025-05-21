@@ -25,9 +25,6 @@ class Settings(BaseSettings):
     POSTGRES_PORT: int = 5432
     POSTGRES_DB: str = "nexus_db"
 
-    # Optional for production
-    # POSTGRES_POOL_SIZE: int = 5
-    # POSTGRES_MAX_OVERFLOW: int = 10
 
     @property
     def get_pg_url(self) -> str:
@@ -47,8 +44,8 @@ class Settings(BaseSettings):
         env_file=str(_ENV_FILE_PATH),
         env_file_encoding="utf-8",
         extra="ignore",
-        env_prefix="",  # No prefix for env vars
-        case_sensitive=False  # Allow case-insensitive env vars
+        env_prefix="",
+        case_sensitive=False
     )
 
 settings = Settings()
