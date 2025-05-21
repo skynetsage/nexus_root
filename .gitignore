@@ -3,8 +3,8 @@
 .env.*
 !.env.example
 !.env.sample
-/config/envs/.env*
-!/config/envs/.env.example
+/configs/envs/.env*
+!/configs/envs/.env.example
 
 # Python
 __pycache__/
