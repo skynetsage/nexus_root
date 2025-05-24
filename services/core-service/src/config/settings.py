@@ -32,11 +32,11 @@ class Settings(BaseSettings):
             f"{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
         )
 
-    @field_validator("SECRET_KEY", mode="before")
-    def validate_secret_key(cls, v: Optional[str]) -> str:
-        if not v and cls.model_fields["ENV"].default == "prod":
-            raise ValueError("SECRET_KEY is required in production")
-        return v or cls.model_fields["SECRET_KEY"].default
+    # @field_validator("SECRET_KEY", mode="before")
+    # def validate_secret_key(cls, v: Optional[str]) -> str:
+    #     if not v and cls.model_fields["ENV"].default == "prod":
+    #         raise ValueError("SECRET_KEY is required in production")
+    #     return v or cls.model_fields["SECRET_KEY"].default
 
     model_config = SettingsConfigDict(
         env_file=str(load_env_file(".env.core")),
