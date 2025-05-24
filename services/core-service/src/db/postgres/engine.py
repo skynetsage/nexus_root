@@ -1,8 +1,8 @@
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
-from contextlib import asynccontextmanager
 from ...config.settings import settings
 
 DB_URI = settings.get_pg_url
@@ -11,7 +11,7 @@ base = declarative_base()
 
 engine = create_async_engine(
     DB_URI,
-    echo=True,
+    echo=False,
     future=True,
 )
 
@@ -21,7 +21,6 @@ AsyncSessionLocal = sessionmaker(
     expire_on_commit=False,
 )
 
-@asynccontextmanager
 async def get_db():
     async with AsyncSessionLocal() as session:
         try:
@@ -32,4 +31,12 @@ async def get_db():
             raise e
         finally:
             await session.close()
+
+async def db_heath_check() -> bool:
+    async with AsyncSessionLocal() as session:
+            await session.execute(text("SELECT 1"))
+            await session.execute(text("SELECT pg_sleep(0.5)"))
+            return True
+
+
 

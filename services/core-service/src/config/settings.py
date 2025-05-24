@@ -1,12 +1,8 @@
-import os
 from typing import Literal, Optional
 from pydantic import Field, PostgresDsn, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pathlib import Path
+from ..utils.config_util import load_env_file
 
-_SETTINGS_FILE_PATH = Path(__file__).resolve()
-_PROJECT_ROOT = _SETTINGS_FILE_PATH.parents[3]
-_ENV_FILE_PATH = _PROJECT_ROOT / "config" / ".env.core"
 
 Environment = Literal["dev", "test", "prod"]
 
@@ -14,6 +10,8 @@ class Settings(BaseSettings):
     ENV: Environment = "dev"
     PORT: int = 8000
     API_V1_STR: str = "/api/v1"
+    PROJECT_NAME: str
+    VERSION: str
 
 
     SECRET_KEY: str = Field(min_length=3, default="unsafe-dev-secret-key-change-me")
@@ -41,7 +39,7 @@ class Settings(BaseSettings):
         return v or cls.model_fields["SECRET_KEY"].default
 
     model_config = SettingsConfigDict(
-        env_file=str(_ENV_FILE_PATH),
+        env_file=str(load_env_file(".env.core")),
         env_file_encoding="utf-8",
         extra="ignore",
         env_prefix="",

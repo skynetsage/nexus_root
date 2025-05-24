@@ -1,0 +1,11 @@
+logging:
+  console_level: "INFO"
+  file_level: "DEBUG"
+  format: "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <cyan>{module}</cyan> | <cyan>{file.path}</cyan>:<cyan>{line}</cyan> | <level>{message}</level>"
+  rotation: "10 MB"
+  retention: "7 days"
+  compression: "zip"
+  paths:
+    core: "nexus_core.log"
+    http: "nexus_http.log"
+    auth: "nexus_auth.log"
