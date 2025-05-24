@@ -42,18 +42,20 @@ class RequestResponseLogger:
             return None
 
         try:
-            return json.loads(body)
+            json_body = json.loads(body)
+            return RequestResponseLogger.redact(json_body)
         except json.JSONDecodeError:
-            return body.decode('utf-8', errors='replace')[:500]  # Truncate long text
+            return body.decode('utf-8', errors='replace')[:500]
 
     @staticmethod
-    def log(request: Request, response=None, duration=None):
+    async def log(request: Request, response=None, duration=None):
+        body = await RequestResponseLogger.get_body(request)
         log_data = {
-            "time": datetime.now(ZoneInfo("Asia/Kolkata")).isoformat(),
             "method": request.method,
             "path": request.url.path,
             "status": response.status_code if response else None,
-            "ms": round(duration * 1000, 2) if duration else None
+            "ms": round(duration * 1000, 2) if duration else None,
+            "body": body
         }
         logger.info(json.dumps(log_data))
 
@@ -62,11 +64,12 @@ class LoggingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         start = datetime.now(ZoneInfo("Asia/Kolkata"))
 
-        RequestResponseLogger.log(request)
+        await RequestResponseLogger.log(request)
 
         response = await call_next(request)
 
         duration = (datetime.now(ZoneInfo("Asia/Kolkata")) - start).total_seconds()
 
-        RequestResponseLogger.log(request, response, duration)
+        await RequestResponseLogger.log(request, response, duration)
+
         return response
