@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from ..config.settings import settings
 from ..config.logger import get_logger
-from ..db.postgres.engine import db_heath_check, engine
+from ..db.postgres.engine import db_heath_check, engine, initialize_table
 
 
 log = get_logger("core")
@@ -11,6 +11,7 @@ log = get_logger("core")
 async def lifespan(app: FastAPI):
 
     log.info("Starting application")
+    await initialize_table()
     try:
         await db_heath_check()
         log.info("Database health check successful")
@@ -30,8 +31,8 @@ def create_app() -> FastAPI:
         version=settings.VERSION,
         lifespan=lifespan,
     )
-    from ..middlewares.http_logging import LoggingMiddleware
-    app.add_middleware(LoggingMiddleware)
+    # from ..middlewares.http_logging import LoggingMiddleware
+    # app.add_middleware(LoggingMiddleware)
     from ..api.v1.api_router import api_router
     app.include_router(api_router)
 

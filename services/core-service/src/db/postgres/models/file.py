@@ -14,7 +14,7 @@ class FileTable(base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
     #user_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('users.id'), nullable=True)
-    resume_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('resumes.resume_id'), nullable=True)
+    resume_id: Mapped[Optional[str]] = mapped_column(String, ForeignKey('resumes.resume_id'), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default=func.now(), onupdate=func.now())

@@ -109,3 +109,5 @@ alembic.ini
 # Temp files
 *.tmp
 *.bak
+
+uploads

@@ -38,5 +38,9 @@ async def db_heath_check() -> bool:
             await session.execute(text("SELECT pg_sleep(0.5)"))
             return True
 
+async def initialize_table():
+    async with engine.begin() as conn:
+        await conn.run_sync(base.metadata.create_all)
+
 
 

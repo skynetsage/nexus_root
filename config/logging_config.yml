@@ -9,3 +9,4 @@ logging:
     core: "nexus_core.log"
     http: "nexus_http.log"
     auth: "nexus_auth.log"
+    resume: "nexus_resume.log"

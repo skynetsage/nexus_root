@@ -7,7 +7,7 @@ from ..schemas.file import FileResponse # To represent nested files
 class ResumeBase(BaseModel):
     resume_id: str = Field(description="External unique identifier for the resume")
     analysis_id: Optional[str] = Field(None, description="Identifier for an analysis associated with the resume")
-
+    is_analyzed: bool = Field(False, description="Whether the resume has been analyzed")
     class Config:
         from_attributes = True # Allows Pydantic to work with ORM models
 
@@ -20,6 +20,7 @@ class ResumeCreate(ResumeBase):
 class ResumeUpdate(BaseModel):
     resume_id: Optional[str] = Field(None, description="New external unique identifier for the resume")
     analysis_id: Optional[str] = Field(None, description="New identifier for an analysis")
+    is_analyzed: Optional[bool] = Field(None, description="Set resume analyzed status")
 
 # Schema for representing a resume as it is in the database (includes DB-generated fields)
 class ResumeInDBBase(ResumeBase):

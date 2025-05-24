@@ -1,5 +1,4 @@
-import os
-
+from pathlib import Path
 import aiofiles
 from fastapi import UploadFile
 from ..config.upload import upload_config
@@ -10,18 +9,17 @@ def allowed_file_type(filename: str, allowed_extensions=None):
         allowed_extensions = upload_config.allowed_file_types
     return filename.split(".")[-1].lower() in allowed_extensions
 
-
 async def upload_file(file: UploadFile) -> str:
     if not allowed_file_type(file.filename):
         raise ValueError(f"File type not allowed: {file.filename}")
 
-    os.makedirs(PROJECT_ROOT/upload_config.upload_folder, exist_ok=True)
-    file_path = upload_config.upload_folder / file.filename
+    relative_path = upload_config.upload_folder / file.filename
+    absolute_path = PROJECT_ROOT / relative_path
 
-    async with aiofiles.open(file_path, 'wb') as out_file:
+    absolute_path.parent.mkdir(parents=True, exist_ok=True)
+
+    async with aiofiles.open(absolute_path, "wb") as out_file:
         content = await file.read()
         await out_file.write(content)
 
-    return str(file_path)
-
-
+    return str(relative_path)

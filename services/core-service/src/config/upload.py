@@ -10,7 +10,7 @@ class UploadConfig(BaseSettings):
     allowed_file_types: List[str]
 
 def load_config() -> UploadConfig:
-    config = load_yaml_config("setting-core.yml")
+    config = load_yaml_config("settings-core.yml")
     return UploadConfig(**config["uploads"])
 
 upload_config = load_config()

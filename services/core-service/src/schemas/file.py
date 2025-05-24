@@ -7,7 +7,7 @@ class FileBase(BaseModel):
     filename: Optional[str] = Field(None, description="Name of the file")
     filepath: Optional[str] = Field(None, description="Path to the file")
     is_active: bool = Field(True, description="Whether the file is active")
-    resume_id: Optional[int] = Field(None, description="ID of the associated resume")
+    resume_id: Optional[str] = Field(None, description="ID of the associated resume")
 
     class Config:
         from_attributes = True #  Allows Pydantic to work with ORM models
@@ -22,7 +22,7 @@ class FileUpdate(BaseModel):
     filename: Optional[str] = Field(None, description="New name of the file")
     filepath: Optional[str] = Field(None, description="New path to the file")
     is_active: Optional[bool] = Field(None, description="Set file active status")
-    resume_id: Optional[int] = Field(None, description="New ID of the associated resume")
+    resume_id: Optional[str] = Field(None, description="New ID of the associated resume")
 
 # Schema for representing a file as it is in the database (includes DB-generated fields)
 class FileInDBBase(FileBase):
