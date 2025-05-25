@@ -7,6 +7,7 @@ from ..engine import base
 
 class FileTable(base):
     __tablename__ = 'files'
+    __table_args__ = {'schema': 'public'}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, index=True)
     filename: Mapped[str] = mapped_column(String, nullable=True)
@@ -19,7 +20,7 @@ class FileTable(base):
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default=func.now(), onupdate=func.now())
 
-    users: Mapped[List["UserTable"]] = relationship(back_populates="files")
+    users: Mapped[List["UserTable"]] = relationship('UserTable',back_populates="files")
     resumes: Mapped["ResumeTable"] = relationship('ResumeTable',back_populates="files")
 
     def __repr__(self) -> str:
