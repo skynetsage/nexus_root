@@ -60,15 +60,7 @@ def configure_sql_logs():
     @event.listens_for(Engine, "before_cursor_execute")
     def before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
 
-        frame = sys._getframe()
         module = "core"
-
-        while frame:
-            if frame.f_globals.get('__name__', '').startswith('api.'):
-                module = frame.f_globals['__name__'].split('.')[1]
-                break
-            frame = frame.f_back
-
         log = get_logger(module)
         log.debug(
             "SQL Query:\n" + statement +

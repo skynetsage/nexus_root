@@ -17,6 +17,8 @@ class ResumeTable(base):
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default=func.now(),onupdate=func.now())
     is_analyzed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+
     files: Mapped["FileTable"] = relationship('FileTable',back_populates="resumes")
     def __repr__(self) -> str:
         return f"<ResumeTable(id={self.id}, resume_id={self.resume_id}, analysis_id={self.analysis_id})>"

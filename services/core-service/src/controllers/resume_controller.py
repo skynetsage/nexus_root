@@ -25,7 +25,8 @@ class ResumeController:
             resume_entry = ResumeCreate(
                 resume_id=custom_id,
                 analysis_id=None,
-                is_analyzed=False
+                is_analyzed=False,
+                is_active=True
             )
             await self.resume_repo.create_resume(resume_entry)
             logger.info("Resume entry created successfully")

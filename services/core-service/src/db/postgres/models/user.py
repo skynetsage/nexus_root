@@ -18,5 +18,6 @@ class UserTable(base):
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default=func.now(), onupdate=func.now())
 
+    files: Mapped["FileTable"] = relationship('FileTable',back_populates="users")
     def __repr__(self) -> str:
         return f"<UserTable(id={self.id}, username={self.username}, email={self.email}, verified={self.verified})>"

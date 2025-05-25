@@ -11,41 +11,39 @@ class ResumeRepository:
         self.db_session = db_session
 
     async def create_resume(self, resume_create: ResumeCreate) -> ResumeTable:
-        """Create a new resume record."""
         db_resume = ResumeTable(**resume_create.model_dump())
         self.db_session.add(db_resume)
-        await self.db_session.flush() # Use flush to get the ID before commit
+        await self.db_session.flush()
         await self.db_session.refresh(db_resume)
         return db_resume
 
     async def get_resume_by_id(self, resume_db_id: int) -> Optional[ResumeTable]:
-        """Get a single resume by its internal database ID, eagerly loading files."""
         query = (
             select(ResumeTable)
             .where(ResumeTable.id == resume_db_id)
+            .where(ResumeTable.is_active == True)
             .options(selectinload(ResumeTable.files))
         )
         result = await self.db_session.execute(query)
         return result.scalars().first()
 
     async def get_resume_by_resume_id_str(self, resume_id_str: str) -> Optional[ResumeTable]:
-        """Get a single resume by its external string resume_id, eagerly loading files."""
         query = (
             select(ResumeTable)
             .where(ResumeTable.resume_id == resume_id_str)
+            .where(ResumeTable.is_active == True)
             .options(selectinload(ResumeTable.files))
         )
         result = await self.db_session.execute(query)
         return result.scalars().first()
 
     async def get_all_resumes(self, limit: int = 100, offset: int = 0) -> List[ResumeTable]:
-        """Get all resumes with pagination, eagerly loading files."""
         query = (
             select(ResumeTable)
             .offset(offset)
             .limit(limit)
             .options(selectinload(ResumeTable.files))
-            .order_by(ResumeTable.id) # Consistent ordering for pagination
+            .order_by(ResumeTable.id)
         )
         result = await self.db_session.execute(query)
         return list(result.scalars().all())
@@ -80,9 +78,24 @@ class ResumeRepository:
 
         return db_resume
 
-    async def delete_resume(self, resume_db_id: int) -> bool:
-        """Delete a resume by its internal database ID (hard delete)."""
-        query = delete(ResumeTable).where(ResumeTable.id == resume_db_id)
+    async def delete_resume(self, resume_id: int) -> bool:
+        query = delete(ResumeTable).where(ResumeTable.id == resume_id)
         result = await self.db_session.execute(query)
         return result.rowcount > 0
+
+    async def soft_delete_resume(self, resume_id: int) -> Optional[ResumeTable]:
+        update_data = {"is_active": False}
+        existing = await self.get_resume_by_id(resume_id)
+        if not existing:
+            return None
+
+        query = (
+            update(ResumeTable)
+            .where(ResumeTable.id == resume_id)
+            .values(**update_data)
+            .returning(ResumeTable)
+        )
+        res = await self.db_session.execute(query)
+        updated_resume = res.scalars().first()
+        return updated_resume
 

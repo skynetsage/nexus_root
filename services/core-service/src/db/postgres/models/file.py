@@ -13,13 +13,13 @@ class FileTable(base):
     filepath: Mapped[str] = mapped_column(String, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
-    #user_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('users.id'), nullable=True)
+    user_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('users.id'), nullable=True)
     resume_id: Mapped[Optional[str]] = mapped_column(String, ForeignKey('resumes.resume_id'), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default=func.now(), onupdate=func.now())
 
-    #users: Mapped["UserTable"] = relationship(back_populates="files")
+    users: Mapped[List["UserTable"]] = relationship(back_populates="files")
     resumes: Mapped["ResumeTable"] = relationship('ResumeTable',back_populates="files")
 
     def __repr__(self) -> str:
