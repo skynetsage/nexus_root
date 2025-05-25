@@ -8,7 +8,7 @@ resume_router = APIRouter(prefix="/resumes")
 
 @resume_router.post("/upload", status_code=status.HTTP_201_CREATED)
 async def upload_resume(
-    file: UploadFile = File(...),
+    file: UploadFile = File(...),   
     db: AsyncSession = Depends(get_db)
 ):
     controller = ResumeController(db=db)

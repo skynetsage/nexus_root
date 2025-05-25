@@ -11,13 +11,23 @@ class UserRepository:
     def __init__(self, db_session: AsyncSession):
         self.db_session = db_session
 
+class UserRepository:
+    def __init__(self, db_session):
+        self.db_session = db_session
+
     async def create_user(self, user_create: UserCreate) -> UserTable:
         """Create a new user record."""
-        db_user = UserTable(**user_create.model_dump())
+        user_data = user_create.model_dump()
+        # Unwrap SecretStr for password
+        if hasattr(user_create.password, "get_secret_value"):
+            user_data["password"] = user_create.password.get_secret_value()
+
+        db_user = UserTable(**user_data)
         self.db_session.add(db_user)
         await self.db_session.flush()
         await self.db_session.refresh(db_user)
         return db_user
+
 
     async def get_user_by_id(self, user_id: int) -> Optional[UserTable]:
         """Get a single user by ID."""

@@ -16,6 +16,11 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password: SecretStr = Field(description="Password for the user")
 
+class UserLogin(BaseModel):
+    email: EmailStr = Field(..., description="Email of the user")
+    password: SecretStr = Field(..., description="Password of the user")
+
+
 # Schema for updating an existing user (request body for PUT/PATCH)
 class UserUpdate(BaseModel):
     username: Optional[str] = Field(None, description="New username")
@@ -26,6 +31,9 @@ class UserUpdate(BaseModel):
 
 # Schema for representing a user as it is in the database (includes DB-generated fields)
 class UserInDBBase(UserBase):
+    id: int = Field(description="Unique ID of the user")
+
+class UserInDBBaseWithDate(UserBase):
     id: int = Field(description="Unique ID of the user")
     created_at: datetime = Field(description="Timestamp of user creation")
     updated_at: datetime = Field(description="Timestamp of last user update")
