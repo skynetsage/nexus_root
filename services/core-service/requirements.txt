@@ -11,3 +11,4 @@ aiofiles
 pyyaml
 python-multipart
 motor
+pydantic[email]

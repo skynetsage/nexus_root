@@ -13,7 +13,7 @@ class UserTable(base):
     email: Mapped[str] = mapped_column(String, nullable=False, unique=True)
     password: Mapped[str] = mapped_column(String, nullable=False)
     verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    roles: Mapped[List[str]] = mapped_column(ARRAY(String), default=list, nullable=False)
+    roles: Mapped[List[str]] = mapped_column(ARRAY(String), default=list, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default=func.now(), onupdate=func.now())
