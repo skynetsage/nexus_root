@@ -10,3 +10,4 @@ greenlet
 aiofiles
 pyyaml
 python-multipart
+motor

@@ -22,7 +22,8 @@ class Settings(BaseSettings):
     POSTGRES_HOST: str = "localhost"
     POSTGRES_PORT: int = 5432
     POSTGRES_DB: str = "nexus_db"
-
+    MONGO_URI: str = "mongodb://localhost:27017"
+    MONGO_DB: str = "nexus_history"
 
     @property
     def get_pg_url(self) -> str:
