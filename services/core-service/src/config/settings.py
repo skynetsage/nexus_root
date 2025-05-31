@@ -6,6 +6,7 @@ from ..utils.config_util import load_env_file
 
 Environment = Literal["dev", "test", "prod"]
 
+
 class Settings(BaseSettings):
     ENV: Environment = "dev"
     PORT: int = 8000
@@ -13,6 +14,7 @@ class Settings(BaseSettings):
     PROJECT_NAME: str
     VERSION: str
 
+    AI_SERVICE_URL: str
 
     SECRET_KEY: str = Field(min_length=3, default="unsafe-dev-secret-key-change-me")
 
@@ -44,7 +46,8 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore",
         env_prefix="",
-        case_sensitive=False
+        case_sensitive=False,
     )
+
 
 settings = Settings()

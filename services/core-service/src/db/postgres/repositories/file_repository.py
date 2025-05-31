@@ -24,6 +24,12 @@ class FileRepository:
         result = await self.db_session.execute(query)
         return result.scalars().first()
 
+    async def get_file_by_user_id(self, user_id: int) -> Optional[FileTable]:
+        """Get a file by user ID."""
+        query = select(FileTable).where(FileTable.user_id == user_id).where(FileTable.is_active == True)
+        result = await self.db_session.execute(query)
+        return result.scalars().first()
+
     async def get_all_files(self, limit: int = 100, offset: int = 0) -> List[FileTable]:
         """Get all files with pagination."""
         query = select(FileTable).offset(offset).limit(limit)

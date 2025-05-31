@@ -12,3 +12,6 @@ pyyaml
 python-multipart
 motor
 pydantic[email]
+httpx
+passlib
+argon2_cffi

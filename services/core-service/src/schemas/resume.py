@@ -6,6 +6,7 @@ from ..schemas.file import FileResponse
 class ResumeBase(BaseModel):
     resume_id: str = Field(description="External unique identifier for the resume")
     analysis_id: Optional[str] = Field(None, description="Identifier for an analysis associated with the resume")
+    jd_id: Optional[str] = Field(None, description="Identifier for the job description associated with the resume")
     is_analyzed: bool = Field(False, description="Whether the resume has been analyzed")
     is_active: bool = Field(True, description="Whether the resume is active")
     class Config:
@@ -20,6 +21,7 @@ class ResumeCreate(ResumeBase):
 class ResumeUpdate(BaseModel):
     resume_id: Optional[str] = Field(None, description="New external unique identifier for the resume")
     analysis_id: Optional[str] = Field(None, description="New identifier for an analysis")
+    jd_id: Optional[str] = Field(None, description="New identifier for the job description")
     is_analyzed: Optional[bool] = Field(None, description="Set resume analyzed status")
     is_active: Optional[bool] = Field(None, description="Set resume active status")
 

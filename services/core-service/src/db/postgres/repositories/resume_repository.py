@@ -6,6 +6,7 @@ from sqlalchemy.orm import selectinload
 from ..models.resume import ResumeTable
 from ....schemas.resume import ResumeCreate, ResumeUpdate
 
+
 class ResumeRepository:
     def __init__(self, db_session: AsyncSession):
         self.db_session = db_session
@@ -27,7 +28,9 @@ class ResumeRepository:
         result = await self.db_session.execute(query)
         return result.scalars().first()
 
-    async def get_resume_by_resume_id_str(self, resume_id_str: str) -> Optional[ResumeTable]:
+    async def get_resume_by_resume_id_str(
+        self, resume_id_str: str
+    ) -> Optional[ResumeTable]:
         query = (
             select(ResumeTable)
             .where(ResumeTable.resume_id == resume_id_str)
@@ -37,7 +40,9 @@ class ResumeRepository:
         result = await self.db_session.execute(query)
         return result.scalars().first()
 
-    async def get_all_resumes(self, limit: int = 100, offset: int = 0) -> List[ResumeTable]:
+    async def get_all_resumes(
+        self, limit: int = 100, offset: int = 0
+    ) -> List[ResumeTable]:
         query = (
             select(ResumeTable)
             .offset(offset)
@@ -48,19 +53,21 @@ class ResumeRepository:
         result = await self.db_session.execute(query)
         return list(result.scalars().all())
 
-    async def update_resume(self, resume_db_id: int, resume_update: ResumeUpdate) -> Optional[ResumeTable]:
+    async def update_resume(
+        self, resume_id: str, resume_update: ResumeUpdate
+    ) -> Optional[ResumeTable]:
         """Update an existing resume by its internal database ID."""
-        db_resume = await self.get_resume_by_id(resume_db_id) # Fetch first to ensure it exists
+        db_resume = await self.get_resume_by_resume_id_str(resume_id)
         if not db_resume:
             return None
 
         update_data = resume_update.model_dump(exclude_unset=True)
-        if not update_data: # Nothing to update
-            return db_resume # Return as is, no changes made
+        if not update_data:  # Nothing to update
+            return db_resume  # Return as is, no changes made
 
         query = (
             update(ResumeTable)
-            .where(ResumeTable.id == resume_db_id)
+            .where(ResumeTable.resume_id == resume_id)
             .values(**update_data)
             .returning(ResumeTable)
         )
@@ -74,7 +81,9 @@ class ResumeRepository:
             # If your DB doesn't auto-update 'updated_at' via onupdate for some reason, or if you want to be explicit:
             # db_resume.updated_at = updated_instance_data.updated_at
             # However, SQLAlchemy's onupdate=func.now() should handle this.
-            await self.db_session.refresh(db_resume, attribute_names=update_data.keys(), with_for_update=True)
+            await self.db_session.refresh(
+                db_resume, attribute_names=update_data.keys(), with_for_update=True
+            )
 
         return db_resume
 
@@ -98,4 +107,3 @@ class ResumeRepository:
         res = await self.db_session.execute(query)
         updated_resume = res.scalars().first()
         return updated_resume
-
