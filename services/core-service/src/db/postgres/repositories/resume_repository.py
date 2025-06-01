@@ -1,9 +1,11 @@
-from typing import List, Optional
+from collections import defaultdict
+from typing import List, Optional, Tuple, Dict
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update, delete
+from sqlalchemy import select, update, delete, func, case
 from sqlalchemy.orm import selectinload
 
 from ..models.resume import ResumeTable
+from ..models.file import FileTable
 from ....schemas.resume import ResumeCreate, ResumeUpdate
 
 
@@ -74,13 +76,9 @@ class ResumeRepository:
         result = await self.db_session.execute(query)
         updated_instance_data = result.scalars().first()
 
-        # Refresh the original instance with the updated data
         if updated_instance_data:
             for key, value in update_data.items():
                 setattr(db_resume, key, value)
-            # If your DB doesn't auto-update 'updated_at' via onupdate for some reason, or if you want to be explicit:
-            # db_resume.updated_at = updated_instance_data.updated_at
-            # However, SQLAlchemy's onupdate=func.now() should handle this.
             await self.db_session.refresh(
                 db_resume, attribute_names=update_data.keys(), with_for_update=True
             )
@@ -107,3 +105,86 @@ class ResumeRepository:
         res = await self.db_session.execute(query)
         updated_resume = res.scalars().first()
         return updated_resume
+
+    async def get_resume_counts_by_user_id(self, user_id: int) -> dict:
+        stmt = (
+            select(
+                func.count(ResumeTable.id).label("total_resumes"),
+                func.count(case((ResumeTable.is_active == True, 1))).label(
+                    "active_resumes"
+                ),
+                func.count(case((ResumeTable.is_active == False, 1))).label(
+                    "inactive_resumes"
+                ),
+                func.count(case((ResumeTable.is_analyzed == True, 1))).label(
+                    "analyzed_resumes"
+                ),
+                func.count(case((ResumeTable.is_analyzed == False, 1))).label(
+                    "unanalyzed_resumes"
+                ),
+            )
+            .join(FileTable, ResumeTable.resume_id == FileTable.resume_id)
+            .where(FileTable.user_id == user_id)
+        )
+
+        result = await self.db_session.execute(stmt)
+        row = result.one()
+
+        return {
+            "total_resumes": row.total_resumes,
+            "active_resumes": row.active_resumes,
+            "inactive_resumes": row.inactive_resumes,
+            "analyzed_resumes": row.analyzed_resumes,
+            "unanalyzed_resumes": row.unanalyzed_resumes,
+        }
+
+    async def get_all_resumes_by_user_id(self, user_id: int) -> List[ResumeTable]:
+        query = (
+            select(ResumeTable)
+            .join(FileTable, ResumeTable.resume_id == FileTable.resume_id)
+            .where(FileTable.user_id == user_id)
+            .where(ResumeTable.is_active == True)
+            .where(ResumeTable.is_analyzed == True)
+            .options(selectinload(ResumeTable.files))
+        )
+        result = await self.db_session.execute(query)
+        return list(result.scalars().all())
+
+    async def get_latest_resume_by_user_id(self, user_id: int) -> Optional[ResumeTable]:
+        query = (
+            select(ResumeTable)
+            .join(FileTable, ResumeTable.resume_id == FileTable.resume_id)
+            .where(FileTable.user_id == user_id)
+            .where(ResumeTable.is_active == True)
+            .order_by(ResumeTable.created_at.desc())
+            .limit(1)
+            .options(selectinload(ResumeTable.files))
+        )
+        result = await self.db_session.execute(query)
+        return result.scalars().first() if result else None
+
+    async def get_monthly_resume_counts(
+        self, user_id: int
+    ) -> Tuple[Dict[str, Dict[str, int]], Dict[str, str]]:
+        stmt = (
+            select(ResumeTable)
+            .join(FileTable, ResumeTable.resume_id == FileTable.resume_id)
+            .where(ResumeTable.is_active == True)
+            .where(FileTable.user_id == user_id)
+        )
+
+        result = await self.db_session.execute(stmt)
+        resumes = result.scalars().all()
+
+        monthly_counts = defaultdict(lambda: {"total_uploaded": 0, "total_analyzed": 0})
+        analysis_id_to_month = {}
+
+        for resume in resumes:
+            month_key = resume.created_at.strftime("%Y-%m")
+            monthly_counts[month_key]["total_uploaded"] += 1
+
+            if resume.analysis_id:
+                monthly_counts[month_key]["total_analyzed"] += 1
+                analysis_id_to_month[resume.analysis_id] = month_key
+
+        return monthly_counts, analysis_id_to_month

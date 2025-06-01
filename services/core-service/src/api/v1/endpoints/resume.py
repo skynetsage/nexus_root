@@ -1,6 +1,5 @@
 from fastapi import APIRouter, UploadFile, Depends, status, File, Form, Request
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.util import await_only
 
 from ....controllers.resume_controller import ResumeController
 from ....db.postgres.engine import get_db
@@ -28,12 +27,20 @@ async def get_user_resumes(
     )
 
 
-@resume_router.post("/call-analyze/{user_id}", status_code=status.HTTP_200_OK)
-async def call_analyze_resume(
-    user_id: int, request: Request, db: AsyncSession = Depends(get_db)
-):
+@resume_router.post("/call-analyze", status_code=status.HTTP_200_OK)
+async def call_analyze_resume(request: Request, db: AsyncSession = Depends(get_db)):
     data = await request.json()
+    user_id = int(data.get("user_id"))
+    resume_id = data.get("resume_id")
     jd = data.get("jd")
 
     controller = ResumeController(db=db)
-    return await controller.resume_analyze(user_id=user_id, jd=jd)
+    return await controller.resume_analyze(user_id=user_id, resume_id=resume_id, jd=jd)
+
+
+@resume_router.get("/history/{user_id}", status_code=status.HTTP_200_OK)
+async def get_analyzed_resumes(
+    user_id: int, limit: int = 10, offset: int = 0, db: AsyncSession = Depends(get_db)
+):
+    controller = ResumeController(db=db)
+    return await controller.get_analysis_history(user_id, limit, offset)
