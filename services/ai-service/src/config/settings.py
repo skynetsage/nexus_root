@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     COHERE_API_KEY: Optional[str] = None
 
     API_V1_STR: str = "/api/v1"
+    REDIS_BROKER_URL: str = "redis://localhost:6379/0"
 
     model_config = SettingsConfigDict(
         env_file=str(load_env_file(".env.ai")),

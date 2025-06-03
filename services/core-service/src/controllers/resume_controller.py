@@ -13,9 +13,12 @@ from ..db.postgres.repositories.resume_repository import ResumeRepository
 from ..db.postgres.repositories.user_repository import UserRepository
 from ..db.mongo.mongo import analysis_data, jd_data
 
+
 from ..utils.file_util import upload_file, get_abs_path
 from ..utils.resume_util import gen_custom_resume_id
 from ..utils.mongo_db_utils import convert_mongo_doc_to_json
+from ..utils.celery_task_util import run_analysis_task  # adjust relative path if needed
+
 
 from ..config.settings import settings
 
@@ -138,13 +141,12 @@ class ResumeController:
                 "file_path": get_abs_path(file_data.filepath),
             }
 
-            client = HttpxClient(
-                url=settings.AI_SERVICE_URL,
-                method="POST",
-                timeout=300.0,
-                payload=json_payload,
-            )
-            response = await client.execute()
+# Blocking Celery call (if using shared thread for now)
+            response = run_analysis_task(
+                resume_id=resume_data.resume_id,
+                jd=jd,
+                file_path=get_abs_path(file_data.filepath)
+            )   
 
             jd_entry = await jd_data.insert_one(
                 {
