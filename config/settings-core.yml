@@ -1,0 +1,4 @@
+uploads:
+  upload_folder: 'uploads/resumes'
+  max_file_size: 10485760
+  allowed_file_types: ['pdf', 'doc', 'docx', 'txt']
