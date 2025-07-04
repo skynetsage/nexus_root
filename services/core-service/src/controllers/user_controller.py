@@ -45,7 +45,7 @@ class UserController:
 
     async def login_user(self, login_data: UserLogin) -> UserResponse:
         try:
-            user = await self.user_repo.get_user_by_email(login_data.email)
+            user = await self.user_repo.get_user_by_username(login_data.username)
             if not user:
                 # logger.warning(f"Login failed: No user found with email {login_data.email}")
                 raise HTTPException(status_code=401, detail="Invalid credentials")

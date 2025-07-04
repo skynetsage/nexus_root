@@ -17,7 +17,7 @@ class UserCreate(UserBase):
     password: SecretStr = Field(description="Password for the user")
 
 class UserLogin(BaseModel):
-    email: EmailStr = Field(..., description="Email of the user")
+    username: str = Field(..., description="Username of the user")
     password: SecretStr = Field(..., description="Password of the user")
 
 

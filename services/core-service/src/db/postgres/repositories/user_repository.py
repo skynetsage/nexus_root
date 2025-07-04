@@ -41,6 +41,12 @@ class UserRepository:
         result = await self.db_session.execute(query)
         return result.scalars().first()
 
+    async def get_user_by_username(self, username: str) -> Optional[UserTable]:
+        """Get a single user by email."""
+        query = select(UserTable).where(UserTable.username == username)
+        result = await self.db_session.execute(query)
+        return result.scalars().first()
+
     async def get_all_users(self, limit: int = 100, offset: int = 0) -> List[UserTable]:
         """Get all users with pagination."""
         query = select(UserTable).offset(offset).limit(limit)
