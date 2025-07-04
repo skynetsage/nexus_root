@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from ..config.settings import settings
 # from ..config.logger import get_logger, configure_sql_logs
 from ..db.postgres.engine import db_heath_check, engine, initialize_table
-
+from fastapi.middleware.cors import CORSMiddleware
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -23,6 +23,11 @@ def create_app() -> FastAPI:
         version=settings.VERSION,
         lifespan=lifespan,
     )
+    app.add_middleware(CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"])
 
     from ..api.v1.api_router import api_router
     app.include_router(api_router)
